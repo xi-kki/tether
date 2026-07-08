@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body, #root { width: 100%; height: 100%; overflow: hidden; background: #000; color: #fff; font-family: 'JetBrains Mono', monospace; }
+  ::selection { background: rgba(0,255,240,0.3); color: #fff; }
+}
+
+@layer components {
+  .neon-border { box-shadow: 0 0 10px rgba(0,255,240,0.3), 0 0 20px rgba(0,255,240,0.1); }
+  .neon-text { text-shadow: 0 0 7px currentColor, 0 0 20px currentColor; }
+  .glass-panel { background: rgba(10,10,30,0.7); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.08); }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .animate-fade-in-up { animation: fadeInUp 0.3s ease-out; }
+  .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+}
