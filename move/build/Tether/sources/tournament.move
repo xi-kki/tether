@@ -16,14 +16,12 @@ module tether::tournament {
     const EWrongPhase: u64 = 1;
     const ETournamentFull: u64 = 2;
     const EInsufficientFee: u64 = 3;
-    const ENotCreator: u64 = 4;
     const ENotEnded: u64 = 5;
     const EAlreadySubmitted: u64 = 6;
     const ENoPrize: u64 = 7;
 
     const MAX_PLAYERS: u64 = 64;
     const DURATION_SECS: u64 = 60;
-    const HOUSE_CUT_BPS: u64 = 500;
     const TOP_PLAYERS: u64 = 3;
 
     /// A Flash Tournament — shared object
@@ -86,7 +84,18 @@ module tether::tournament {
         rank: u64,
     }
 
-    /// Create a new Flash Tournament
+    /// Create a new Flash Tournament.
+    ///
+    /// ## Arguments
+    /// * `entry_fee` - MIST required to join (1 SUI = 1_000_000_000 MIST)
+    /// * `seed_hash` - Provably fair seed for course generation
+    ///
+    /// ## Side Effects
+    /// Creates a shared `Tournament` object. Emits `TournamentCreated`.
+    ///
+    /// ## Security
+    /// `seed_hash` should come from a verifiable random function (VRF)
+    /// to prevent course manipulation.
     public fun create_tournament(
         entry_fee: u64,
         seed_hash: u256,
@@ -118,7 +127,25 @@ module tether::tournament {
         });
     }
 
-    /// Join a tournament by paying the entry fee
+    /// Join a tournament by paying the entry fee.
+    ///
+    /// ## Arguments
+    /// * `tournament` - The tournament to join
+    /// * `payment` - SUI coin ≥ entry_fee
+    ///
+    /// ## Side Effects
+    /// Transfers `payment` into the prize pool. Creates a `PlayerEntry`
+    /// owned by the sender. Emits `PlayerJoined`.
+    ///
+    /// ## Errors
+    /// * `EWrongPhase` - Tournament not in registration
+    /// * `ETournamentFull` - Max players reached
+    /// * `EInsufficientFee` - Payment less than entry fee
+    ///
+    /// ## Security
+    /// `Coin<SUI>` is consumed via `coin::into_balance` so it cannot
+    /// be double-spent. PlayerEntry goes to sender — only they can
+    /// submit scores or claim prizes.
     public fun join(
         tournament: &mut Tournament,
         payment: Coin<SUI>,
@@ -154,6 +181,12 @@ module tether::tournament {
         };
     }
 
+    /// Start the tournament (closes registration).
+    /// Called automatically when max_players is reached.
+    ///
+    /// ## Side Effects
+    /// Sets phase to 1 (running). Records start_time for duration.
+    /// Once started, no new players can join.
     public fun start_tournament(
         tournament: &mut Tournament,
         ctx: &TxContext,
@@ -162,7 +195,24 @@ module tether::tournament {
         tournament.start_time = tx_context::epoch_timestamp_ms(ctx);
     }
 
-    /// Submit your final score after the run
+    /// Submit your final score after completing a run.
+    ///
+    /// ## Arguments
+    /// * `score` - Total points from the run
+    /// * `grazing_count` - Times the player grazed obstacles
+    /// * `average_angle_error` - Average deviation from correct angle
+    ///
+    /// ## Side Effects
+    /// Inserts score into ranked leaderboard. Auto-ends tournament
+    /// if duration has elapsed. Emits `ScoreSubmitted`.
+    ///
+    /// ## Errors
+    /// * `EAlreadySubmitted` - This entry already has a score
+    ///
+    /// ## Security
+    /// Only the PlayerEntry owner can submit. Scores are recorded
+    /// as-is — production should verify via ZK proof or signed
+    /// game client attestation.
     public fun submit_score(
         tournament: &mut Tournament,
         entry: &mut PlayerEntry,
@@ -270,10 +320,14 @@ module tether::tournament {
         tournament.phase = 2;
     }
 
+    /// Get the current leaderboard (sorted descending by score).
+    /// Returns all submitted scores.
     public fun get_top_scores(tournament: &Tournament): vector<PlayerScore> {
         tournament.top_scores
     }
 
+    /// Get the total prize pool in MIST.
+    /// Use for frontend display.
     public fun prize_pool_value(tournament: &Tournament): u64 {
         balance::value(&tournament.prize_pool)
     }

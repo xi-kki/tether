@@ -215,6 +215,7 @@ export class GameEngine {
   // --- Effects ---
 
   addShake(intensity: number, _duration: number) {
+    // Note: _duration reserved for future decay curve customization
     this.shakeIntensity = Math.min(25, this.shakeIntensity + intensity);
   }
 
@@ -251,6 +252,8 @@ export class GameEngine {
 
   /** Main update — called from game loop at fixed timestep */
   update(dt: number) {
+    // Cap at 50ms to prevent spiral-of-death when tab is backgrounded
+    // (browser throttles rAF to 0-4Hz, causing dt spikes up to 250ms+)
     const cappedDt = Math.min(dt, 0.05);
 
     // Update hold timer

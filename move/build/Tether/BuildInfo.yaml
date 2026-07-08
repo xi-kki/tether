@@ -10,7 +10,7 @@ compiled_package_info:
     allow_dirty: false
     default_flavor: sui
     default_edition: ~
-    silence_warnings: false
+    silence_warnings: true
     warnings_are_errors: false
     json_errors: false
     additional_named_addresses: {}

@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/components/gamecanvas.tsx","./src/game/engine.ts","./src/game/equations.ts","./src/game/game.ts","./src/game/levels.ts","./src/game/math.worker.ts","./src/game/physics.ts","./src/game/renderer.ts"],"version":"5.9.3"}

@@ -296,7 +296,6 @@ export class Renderer {
   private drawTetherGauge(engine: GameEngine) {
     const ctx = this.ctx;
     const w = engine.width;
-    const level = /* cached */ null; // will be passed properly
 
     ctx.save();
     ctx.font = '14px "JetBrains Mono", monospace';

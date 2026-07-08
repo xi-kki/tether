@@ -26,17 +26,8 @@ module tether::gear {
 
     // ─── Error Codes ─────────────────────────────────
 
-    /// Only the gear owner can fuse or level up
-    const ENotOwner: u64 = 1;
-
     /// Cannot fuse a gear with itself
     const ECannotFuseSelf: u64 = 2;
-
-    /// Invalid gear type for this operation
-    const EInvalidGearType: u64 = 3;
-
-    /// Gear is already at max level
-    const EMaxLevel: u64 = 4;
 
     // ─── Gear Types ──────────────────────────────────
 
