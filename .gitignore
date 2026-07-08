@@ -3,3 +3,8 @@ dist/
 .DS_Store
 *.local
 .vite/
+*.log
+*.tsbuildinfo
+play.bat
+serve.cjs
+start-server.vbs
