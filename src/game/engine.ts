@@ -10,6 +10,7 @@ import type { PlayerState, Spark, Vec2 } from '../types';
 import { COLORS } from '../types';
 import { LEVELS } from './levels';
 import { initPendulum, stepPendulum, checkLanding, checkFell, PendulumState } from './physics';
+import { playPerfect, playOk, playCrash, playVictory, playSwing } from './audio';
 
 export type GamePhase = 'menu' | 'playing' | 'swinging' | 'landed' | 'crashed' | 'complete';
 
@@ -158,6 +159,7 @@ export class GameEngine {
     this.player.phase = 'swinging';
     this.phase = 'swinging';
     this.player.swinging = true;
+    playSwing();
   }
 
   /** Evaluate the swing result */
@@ -181,6 +183,7 @@ export class GameEngine {
       this.addShake(8, 0.3);
       this.spawnLandingSparks(level.targetPos.x, level.targetPos.y, '#00FF7F');
       this.phase = 'landed';
+      playPerfect();
     } else if (angleOk || holdOk) {
       // Partial — close enough to land roughly
       this.score += 200;
@@ -188,6 +191,7 @@ export class GameEngine {
       this.levelResults.push('ok');
       this.addShake(4, 0.2);
       this.phase = 'landed';
+      playOk();
     } else {
       // Crash!
       this.combo = 0;
@@ -195,6 +199,7 @@ export class GameEngine {
       this.addShake(20, 0.8);
       this.spawnCrashSparks(this.player.x, this.player.y);
       this.phase = 'crashed';
+      playCrash();
     }
   }
 
@@ -202,6 +207,7 @@ export class GameEngine {
   nextLevel() {
     if (this.levelIndex + 1 >= LEVELS.length) {
       this.phase = 'complete';
+      playVictory();
     } else {
       this.loadLevel(this.levelIndex + 1);
     }
