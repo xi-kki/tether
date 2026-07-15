@@ -8,3 +8,5 @@ dist/
 play.bat
 serve.cjs
 start-server.vbs
+
+.vercel

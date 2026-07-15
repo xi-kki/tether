@@ -12,7 +12,7 @@ import { LEVELS } from './levels';
 import { initPendulum, stepPendulum, checkLanding, checkFell, PendulumState } from './physics';
 import { playPerfect, playOk, playCrash, playVictory, playSwing } from './audio';
 
-export type GamePhase = 'menu' | 'playing' | 'swinging' | 'landed' | 'crashed' | 'complete';
+export type GamePhase = 'menu' | 'tutorial' | 'playing' | 'paused' | 'swinging' | 'landed' | 'crashed' | 'complete' | 'levelSelect';
 
 export class GameEngine {
   phase: GamePhase = 'menu';
@@ -42,6 +42,24 @@ export class GameEngine {
   floorY = 550;
   width = 800;
   height = 600;
+
+  // Statistics
+  stats = {
+    totalPlays: 0,
+    totalPerfects: 0,
+    totalCrashes: 0,
+    bestCombo: 0,
+    bestScore: 0,
+    totalLevelsCompleted: 0,
+    perfectStreak: 0,
+    bestPerfectStreak: 0,
+  };
+
+  // Achievements
+  achievements: string[] = [];
+
+  // Pause
+  private paused = false;
 
   constructor() {
     this.player = this.defaultPlayer();
@@ -100,7 +118,88 @@ export class GameEngine {
     this.score = 0;
     this.combo = 0;
     this.levelResults = [];
+    this.stats.totalPlays++;
     this.loadLevel(0);
+  }
+
+  /** Start from specific level */
+  startFromLevel(index: number) {
+    this.score = 0;
+    this.combo = 0;
+    this.levelResults = [];
+    this.loadLevel(index);
+  }
+
+  /** Toggle pause */
+  togglePause() {
+    if (this.phase === 'playing' || this.phase === 'paused') {
+      if (this.phase === 'paused') {
+        this.phase = 'playing';
+      } else {
+        this.phase = 'paused';
+      }
+      if (this.onUpdate) this.onUpdate();
+    }
+  }
+
+  /** Show tutorial */
+  showTutorial() {
+    this.phase = 'tutorial';
+    if (this.onUpdate) this.onUpdate();
+  }
+
+  /** Show level select */
+  showLevelSelect() {
+    this.phase = 'levelSelect';
+    if (this.onUpdate) this.onUpdate();
+  }
+
+  /** Check and unlock achievements */
+  private checkAchievements() {
+    const newAchievements: string[] = [];
+
+    if (this.stats.totalPlays === 1 && !this.achievements.includes('first-swing')) {
+      newAchievements.push('first-swing');
+    }
+    if (this.stats.totalPerfects >= 1 && !this.achievements.includes('perfect-landing')) {
+      newAchievements.push('perfect-landing');
+    }
+    if (this.stats.totalPerfects >= 5 && !this.achievements.includes('perfectionist')) {
+      newAchievements.push('perfectionist');
+    }
+    if (this.stats.bestCombo >= 3 && !this.achievements.includes('combo-master')) {
+      newAchievements.push('combo-master');
+    }
+    if (this.stats.bestCombo >= 6 && !this.achievements.includes('unstoppable')) {
+      newAchievements.push('unstoppable');
+    }
+    if (this.stats.bestCombo >= 12 && !this.achievements.includes('legendary')) {
+      newAchievements.push('legendary');
+    }
+    if (this.stats.totalCrashes === 0 && this.stats.totalPlays > 0 && !this.achievements.includes('no-crash')) {
+      newAchievements.push('no-crash');
+    }
+    if (this.stats.bestScore >= 3000 && !this.achievements.includes('high-scorer')) {
+      newAchievements.push('high-scorer');
+    }
+    if (this.stats.bestScore >= 6000 && !this.achievements.includes('score-legend')) {
+      newAchievements.push('score-legend');
+    }
+    if (this.levelResults.length >= 12 && !this.achievements.includes('level-master')) {
+      newAchievements.push('level-master');
+    }
+    if (this.stats.perfectStreak >= 3 && !this.achievements.includes('streak-3')) {
+      newAchievements.push('streak-3');
+    }
+    if (this.stats.perfectStreak >= 6 && !this.achievements.includes('streak-6')) {
+      newAchievements.push('streak-6');
+    }
+
+    for (const a of newAchievements) {
+      if (!this.achievements.includes(a)) {
+        this.achievements.push(a);
+      }
+    }
   }
 
   /** Handle angle input (typed by player) */
@@ -180,6 +279,11 @@ export class GameEngine {
       this.score += 500;
       this.combo++;
       this.levelResults.push('perfect');
+      this.stats.totalPerfects++;
+      this.stats.totalLevelsCompleted++;
+      this.stats.bestCombo = Math.max(this.stats.bestCombo, this.combo);
+      this.stats.perfectStreak++;
+      this.stats.bestPerfectStreak = Math.max(this.stats.bestPerfectStreak, this.stats.perfectStreak);
       this.addShake(8, 0.3);
       this.spawnLandingSparks(level.targetPos.x, level.targetPos.y, '#00FF7F');
       this.phase = 'landed';
@@ -189,6 +293,8 @@ export class GameEngine {
       this.score += 200;
       this.combo = 0;
       this.levelResults.push('ok');
+      this.stats.totalLevelsCompleted++;
+      this.stats.perfectStreak = 0;
       this.addShake(4, 0.2);
       this.phase = 'landed';
       playOk();
@@ -196,11 +302,15 @@ export class GameEngine {
       // Crash!
       this.combo = 0;
       this.levelResults.push('fail');
+      this.stats.totalCrashes++;
+      this.stats.perfectStreak = 0;
       this.addShake(20, 0.8);
       this.spawnCrashSparks(this.player.x, this.player.y);
       this.phase = 'crashed';
       playCrash();
     }
+    this.stats.bestScore = Math.max(this.stats.bestScore, this.score);
+    this.checkAchievements();
   }
 
   /** Advance to next level */
@@ -258,6 +368,9 @@ export class GameEngine {
 
   /** Main update — called from game loop at fixed timestep */
   update(dt: number) {
+    // Don't update if paused
+    if (this.phase === 'paused') return;
+
     // Cap at 50ms to prevent spiral-of-death when tab is backgrounded
     // (browser throttles rAF to 0-4Hz, causing dt spikes up to 250ms+)
     const cappedDt = Math.min(dt, 0.05);

@@ -8,6 +8,9 @@
 let audioCtx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
 let muted = false;
+let bgMusicNode: OscillatorNode | null = null;
+let bgMusicGain: GainNode | null = null;
+let bgMusicPlaying = false;
 
 function getCtx(): AudioContext {
   if (!audioCtx) {
@@ -225,4 +228,97 @@ export function playSwing() {
   gain.connect(out());
   osc.start(ctx.currentTime);
   osc.stop(ctx.currentTime + 0.8);
+}
+
+/** Background music — ambient synth pad */
+export function startBgMusic() {
+  if (bgMusicPlaying || muted) return;
+  const ctx = getCtx();
+  
+  // Create a ambient pad with multiple oscillators
+  bgMusicGain = ctx.createGain();
+  bgMusicGain.gain.value = 0.05;
+  bgMusicGain.connect(out());
+
+  const notes = [130.81, 164.81, 196.00, 261.63]; // C3, E3, G3, C4
+  const oscillators: OscillatorNode[] = [];
+
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    
+    const noteGain = ctx.createGain();
+    noteGain.gain.value = 0.02;
+    
+    // Slow LFO for movement
+    const lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 0.1 + i * 0.05;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 0.01;
+    lfo.connect(lfoGain);
+    lfoGain.connect(noteGain.gain);
+    lfo.start();
+    
+    osc.connect(noteGain);
+    noteGain.connect(bgMusicGain!);
+    osc.start();
+    oscillators.push(osc);
+  });
+
+  bgMusicNode = oscillators[0];
+  bgMusicPlaying = true;
+}
+
+export function stopBgMusic() {
+  if (bgMusicNode) {
+    try {
+      bgMusicNode.stop();
+    } catch (e) {}
+    bgMusicNode = null;
+  }
+  bgMusicPlaying = false;
+}
+
+export function isBgMusicPlaying() {
+  return bgMusicPlaying;
+}
+
+/** Achievement unlock sound */
+export function playAchievement() {
+  const ctx = getCtx();
+  const notes = [523, 659, 784, 1047, 1319]; // C5, E5, G5, C6, E6
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.06);
+    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + i * 0.06 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.4);
+    osc.connect(gain);
+    gain.connect(out());
+    osc.start(ctx.currentTime + i * 0.06);
+    osc.stop(ctx.currentTime + i * 0.06 + 0.4);
+  });
+}
+
+/** Level complete jingle */
+export function playLevelComplete() {
+  const ctx = getCtx();
+  const notes = [392, 494, 587, 784]; // G4, B4, D5, G5
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.08);
+    gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + i * 0.08 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.3);
+    osc.connect(gain);
+    gain.connect(out());
+    osc.start(ctx.currentTime + i * 0.08);
+    osc.stop(ctx.currentTime + i * 0.08 + 0.3);
+  });
 }

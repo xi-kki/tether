@@ -96,4 +96,52 @@ export const LEVELS: Level[] = [
     'The angle whose tangent is 2.5 (nearest degree)', 68,
     260, 5, 52, 6,
     [45, 58, 63, 68]),
+
+  // Level 13: Bonus — double angle
+  lvl(13, 100, 450, 1100, 400, 600, 65,
+    'sin(2θ) = 1. What is θ?', 45,
+    280, 5, 56, 7,
+    [22, 30, 45, 60]),
+
+  // Level 14: Bonus — half angle
+  lvl(14, 80, 440, 1150, 410, 620, 60,
+    'cos(θ/2) = 0.966. What is θ?', 30,
+    300, 5, 60, 7,
+    [15, 30, 45, 60]),
+
+  // Level 15: Bonus — identity
+  lvl(15, 100, 450, 1200, 420, 650, 55,
+    'sin²(θ) + cos²(θ) = 1. If sin(θ) = 0.6, what is θ?', 37,
+    320, 4, 80, 8,
+    [30, 37, 45, 53]),
+
+  // Level 16: Bonus — law of sines
+  lvl(16, 80, 460, 1250, 400, 670, 50,
+    'In a triangle: sin(A)/a = sin(B)/b. If A=30°, a=5, b=10, what is B?', 90,
+    340, 4, 85, 8,
+    [45, 60, 75, 90]),
+
+  // Level 17: Bonus — area formula
+  lvl(17, 100, 450, 1300, 410, 700, 45,
+    'Area = ½ab·sin(C). If a=b and area = 25, what is C (nearest deg)?', 90,
+    360, 4, 90, 9,
+    [45, 60, 75, 90]),
+
+  // Level 18: Bonus — compound angle
+  lvl(18, 80, 440, 1350, 420, 720, 40,
+    'sin(A+B) = sinA·cosB + cosA·sinB. If A=B=30°, what is sin(2A)?', 60,
+    380, 4, 95, 9,
+    [30, 45, 60, 90]),
+
+  // Level 19: Bonus — vector angle
+  lvl(19, 100, 450, 1400, 400, 750, 35,
+    'Vector (3,4). Angle from horizontal (nearest deg)?', 53,
+    400, 3, 133, 10,
+    [37, 45, 53, 67]),
+
+  // Level 20: Final Boss — everything combined
+  lvl(20, 80, 460, 1500, 410, 780, 30,
+    'tan⁻¹(√3) + cos⁻¹(0.5) = θ. What is θ?', 120,
+    420, 3, 140, 10,
+    [60, 90, 120, 150]),
 ];

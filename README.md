@@ -5,6 +5,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Stack](https://img.shields.io/badge/stack-React%20%7C%20TypeScript%20%7C%20Canvas%202D%20%7C%20Vite-blue)
 ![Architecture](https://img.shields.io/badge/arch-Web%20Worker%20%7C%20Fixed%20Timestep%20%7C%20Verlet-orange)
+![Levels](https://img.shields.io/badge/levels-20-yellow)
 
 ---
 
@@ -34,18 +35,40 @@ Clue: "The complement of 60°"
 | `Space (hold)` | Extend the tether |
 | `Space (release)` | Fire the grapple and swing |
 | `Enter / Space` | Advance to next level (after landing) |
+| `ESC` | Pause the game |
 
 ### Scoring
 
 | Outcome | Points | Effect |
 |---------|--------|--------|
-| ✦ **Perfect** (angle +-5°, length +-1s) | 500 | Combo increases |
+| ✦ **Perfect** (angle ±5°, length ±1s) | 500 | Combo increases |
 | ✓ **Partial** (one of two correct) | 200 | Combo resets |
 | ✗ **Crash** (both wrong) | 0 | Retry the level |
 
 ---
 
-## 🧠 Difficulty Progression (12 Levels)
+## 🏆 Achievements
+
+Unlock achievements by mastering the game:
+
+| Achievement | Requirement |
+|-------------|-------------|
+| 🎯 First Swing | Complete your first level |
+| ✦ Perfect Landing | Get a perfect score |
+| 💎 Perfectionist | Get 5 perfect landings |
+| 🔥 Combo Master | Achieve a 3x combo |
+| ⚡ Unstoppable | Achieve a 6x combo |
+| 👑 Legendary | Achieve a 12x combo |
+| 🛡️ No Crash | Complete without crashing |
+| 📈 High Scorer | Score 3000+ points |
+| 🏆 Score Legend | Score 6000+ points |
+| 🎮 Level Master | Complete all 20 levels |
+| 🌡️ Hot Streak | 3 perfects in a row |
+| 🔥 On Fire | 6 perfects in a row |
+
+---
+
+## 🧠 Difficulty Progression (20 Levels)
 
 | Level | Topic | Example Clue | Angle |
 |-------|-------|-------------|-------|
@@ -61,6 +84,14 @@ Clue: "The complement of 60°"
 | 10 | Angle equations | "θ + 2θ = 90°" | 30° |
 | 11 | Applied trig | "A ramp rises 3m over 9m. Angle?" | 18° |
 | 12 | Inverse tangent | "tan⁻¹(2.5)" | 68° |
+| 13 | Double angle | "sin(2θ) = 1. What is θ?" | 45° |
+| 14 | Half angle | "cos(θ/2) = 0.966. What is θ?" | 30° |
+| 15 | Pythagorean identity | "sin²(θ) + cos²(θ) = 1. If sin(θ) = 0.6, what is θ?" | 37° |
+| 16 | Law of sines | "In a triangle: sin(A)/a = sin(B)/b..." | 90° |
+| 17 | Area formula | "Area = ½ab·sin(C). If a=b and area = 25, what is C?" | 90° |
+| 18 | Compound angle | "sin(A+B) = sinA·cosB + cosA·sinB..." | 60° |
+| 19 | Vector angle | "Vector (3,4). Angle from horizontal?" | 53° |
+| 20 | Final Boss | "tan⁻¹(√3) + cos⁻¹(0.5) = θ. What is θ?" | 120° |
 
 ---
 
@@ -72,6 +103,8 @@ Clue: "The complement of 60°"
 - **Motion trails** — player leaves a fading neon trail during swing
 - **Glow rendering** — multi-pass shadow blur for authentic neon look
 - **Dark glassmorphism** — HUD overlays with backdrop blur
+- **Background music** — ambient synth pad that plays during gameplay
+- **Sound effects** — synthesized audio for all interactions
 
 ---
 
@@ -89,9 +122,10 @@ Clue: "The complement of 60°"
 │                  ENGINE LAYER (Pure Logic)                   │
 │  engine.ts   — State machine, level loading, scoring        │
 │  physics.ts  — Verlet pendulum integration                  │
-│  levels.ts   — 12 level definitions                         │
+│  levels.ts   — 20 level definitions                         │
 │  math.worker — Equation generation (offloaded to Web Worker)│
 │  equations.ts — Trig/geometry generators                    │
+│  audio.ts    — Programmatic sound effects + background music│
 ├─────────────────────────────────────────────────────────────┤
 │                  RENDERER LAYER (Canvas 2D)                 │
 │  renderer.ts — Neon canyon, grapple, player, sparks         │
@@ -119,6 +153,7 @@ Clue: "The complement of 60°"
 | **Rendering** | HTML5 Canvas 2D |
 | **Physics** | Custom Verlet pendulum integration |
 | **Math** | Web Worker (dedicated thread) |
+| **Audio** | Web Audio API (programmatic synthesis) |
 | **Build** | Vite 6 |
 | **Styling** | Tailwind CSS 3 |
 | **Font** | JetBrains Mono |
@@ -169,9 +204,10 @@ tether/
 │   │   ├── engine.ts       # State machine, level loading, scoring
 │   │   ├── physics.ts      # Verlet pendulum integration
 │   │   ├── renderer.ts     # Canvas 2D neon rendering
-│   │   ├── levels.ts       # 12 level definitions
+│   │   ├── levels.ts       # 20 level definitions
 │   │   ├── equations.ts    # Trig/geometry generators
 │   │   ├── math.worker.ts  # Web Worker (offloaded math)
+│   │   ├── audio.ts        # Synthesized sound effects + music
 │   │   └── game.ts         # Game loop, input routing
 │   ├── components/
 │   │   └── GameCanvas.tsx  # React canvas wrapper
